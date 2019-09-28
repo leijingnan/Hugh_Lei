@@ -1,0 +1,95 @@
+package  web_portal
+
+import (
+	"encoding/json"
+	"github.com/gorilla/mux"
+	"gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
+	"net/http"
+	"mongodb/Asset"
+	)
+
+func GetAssets(w http.ResponseWriter, req *http.Request) {
+	url:="mongodb://localhost"								//打开数据库
+	session,err:=mgo.Dial(url)
+	if err!=nil{
+		panic(err)
+	}
+	defer session.Close()
+	session.SetMode(mgo.Monotonic,true)
+	c:=session.DB("test").C("Assets")
+	var assets []ASSET.Asset
+	c.Find(nil).All(&assets)							//获得所有的资产的信息
+	json.NewEncoder(w).Encode(assets)						//将所有的资产信息转码为json数据在网页中输出
+}
+
+// 根据id获取对应固定资产
+func GetAsset(w http.ResponseWriter, req *http.Request) {
+	url:="mongodb://localhost"
+	session,err:=mgo.Dial(url)
+	if err!=nil{
+		panic(err)
+	}
+	defer session.Close()
+	session.SetMode(mgo.Monotonic,true)
+	c:=session.DB("test").C("Assets")
+	params := mux.Vars(req)									//获得所请求的id
+	var assets []ASSET.Asset
+	c.Find(nil).All(&assets)							//获得全部资产
+
+	for _, item := range assets {							//遍历全部资产 找到对应id的资产的信息并将其输出
+		if item.ID == params["id"] {
+			var ass []ASSET.Asset
+			err=c.Find(bson.M{"id":"0001"}).All(&ass)
+			json.NewEncoder(w).Encode(item)
+			return
+		}
+	}
+	json.NewEncoder(w).Encode(assets)
+}
+
+// 向数据库中添加固定资产
+func PostAsset(w http.ResponseWriter, req *http.Request) {
+	url:="mongodb://localhost"
+	session,err:=mgo.Dial(url)
+	if err!=nil{
+		panic(err)
+	}
+	defer session.Close()
+	session.SetMode(mgo.Monotonic,true)
+	c:=session.DB("test").C("Assets")
+	var assets []ASSET.Asset
+	c.Find(nil).All(&assets)
+	params := mux.Vars(req)
+	for _, item := range assets {								//检查数据库中是否已经有该id的资产
+		if item.ID == params["id"] {
+			json.NewEncoder(w).Encode("This id is repeated!")
+			return
+		}
+	}
+	var Asset_1 ASSET.Asset
+	_ = json.NewDecoder(req.Body).Decode(&Asset_1)				//将网页中的json数据解码以便存入数据库
+	Asset_1.ID = params["id"]
+	c.Insert(Asset_1)
+	c.Find(nil).All(&assets)
+	json.NewEncoder(w).Encode(assets)
+}
+
+// 根据id进行删除操作
+func DeleteAsset(w http.ResponseWriter, req *http.Request) {
+	url:="mongodb://localhost"
+	session,err:=mgo.Dial(url)
+	if err!=nil{
+		panic(err)
+	}
+	defer session.Close()
+	//打开默认数据库test
+	session.SetMode(mgo.Monotonic,true)
+	c:=session.DB("test").C("Assets")
+	params := mux.Vars(req)
+	_, err = c.RemoveAll(bson.M{"id":params["id"]})					//从数据库中删除这个id的资产
+	var assets []ASSET.Asset
+	c.Find(nil).All(&assets)
+	json.NewEncoder(w).Encode(assets)
+}
+
