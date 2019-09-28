@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 	"gopkg.in/mgo.v2"
+	"bufio"
 	"mongodb/Asset"
 )
 
@@ -14,11 +15,11 @@ func CSV_READ(){
 	for true {
 		fmt.Println("please enter the address of the csv file(退出为exit)")
 		inputReader := bufio.NewReader(os.Stdin)
-		way, err := inputReader.ReadString('\n')					//输入文件所在地址(包括文件名)
+		way, err := inputReader.ReadString('\n')
 		if way == "exit"{
 			return
 		}
-		file, err := os.Open(way)				//打开文件的位置
+		file, err := os.Open(way[:len(way)-1])				//打开文件的位置
 		if err != nil {							//检查地址是否有效，无效则退出
 			fmt.Println("Error:", err)
 			continue
