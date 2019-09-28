@@ -11,10 +11,10 @@ import (
 
 //文件读取
 func CSV_READ(){
-	var way string
 	for true {
 		fmt.Println("please enter the address of the csv file(退出为exit)")
-		fmt.Scan(&way)					//输入文件所在地址(包括文件名)
+		inputReader := bufio.NewReader(os.Stdin)
+		way, err := inputReader.ReadString('\n')					//输入文件所在地址(包括文件名)
 		if way == "exit"{
 			return
 		}
