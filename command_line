@@ -1,0 +1,31 @@
+package command_line
+
+import(
+	"fmt"
+	"log"
+	"time"
+	"os/exec"
+)
+
+//启动命令行程序
+func checkExe2(exeAdress string) {									//启动命令行的函数
+	cmd := exec.Command("cmd.exe", "/c", "start "+exeAdress)				//命令行程序地址
+	err := cmd.Run()
+	if err != nil {
+		log.Println("启动失败:", err)
+	} else {
+		log.Println("启动成功!")
+	}
+}
+func CheckExe2() {
+	checkExe2("C:/go/src/project/mongo.exe")			//读取mongodb的命令行输入exe文件的位置
+	time.Sleep(100 * time.Millisecond)       					//为了输出美观加了个停顿
+	fmt.Println("退出时输入exit")
+	var flag string
+	for true {
+		fmt.Scan(&flag)
+		if flag == "exit" {
+			return
+		}
+	}
+}
